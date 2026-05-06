@@ -18,7 +18,8 @@ We test:
 import numpy as np
 import pytest
 
-from src.mlp import MLP, initialize_weights, get_activation_and_derivative
+from src.mlp import (MLP, initialize_weights, get_activation_and_derivative,
+                     apply_relu, apply_relu_derivative)
 from src.trainer import train_batch, train_online, train_online_one_epoch, prepare_inputs
 
 
@@ -283,10 +284,41 @@ class TestActivations:
         _, deriv = get_activation_and_derivative("sigmoid")
         assert np.isclose(deriv(np.array([0.0])), 0.25)
 
+    def test_relu_at_positive(self):
+        """ReLU should pass positive values through unchanged."""
+        assert np.isclose(apply_relu(np.array([3.0])), 3.0)
+
+    def test_relu_at_negative(self):
+        """ReLU should clamp negative values to zero."""
+        assert np.isclose(apply_relu(np.array([-5.0])), 0.0)
+
+    def test_relu_at_zero(self):
+        """ReLU(0) should be 0."""
+        assert np.isclose(apply_relu(np.array([0.0])), 0.0)
+
+    def test_relu_derivative_at_positive(self):
+        """ReLU derivative is 1 for any positive input."""
+        assert np.isclose(apply_relu_derivative(np.array([2.0])), 1.0)
+
+    def test_relu_derivative_at_negative(self):
+        """ReLU derivative is 0 for any negative input (gradient is blocked)."""
+        assert np.isclose(apply_relu_derivative(np.array([-1.0])), 0.0)
+
+    def test_relu_derivative_at_zero(self):
+        """ReLU derivative at 0 is 0 by the standard subgradient convention."""
+        assert np.isclose(apply_relu_derivative(np.array([0.0])), 0.0)
+
+    def test_relu_registered_in_dispatcher(self):
+        """get_activation_and_derivative('relu') should return the ReLU pair."""
+        fn, deriv = get_activation_and_derivative("relu")
+        # Spot-check: fn(2) = 2, deriv(2) = 1
+        assert np.isclose(fn(np.array([2.0])), 2.0)
+        assert np.isclose(deriv(np.array([2.0])), 1.0)
+
     def test_unknown_name_raises_value_error(self):
-        """Requesting an unknown activation should raise a ValueError."""
+        """Requesting an unknown activation name should raise a ValueError."""
         with pytest.raises(ValueError):
-            get_activation_and_derivative("relu_not_here_yet")
+            get_activation_and_derivative("swish_not_implemented")
 
 
 # Tests for prepare_inputs()

@@ -34,6 +34,31 @@ def apply_sigmoid_derivative(z):
     return s * (1.0 - s)
 
 
+def apply_relu(z):
+    """
+    Apply the ReLU (Rectified Linear Unit) activation element-wise.
+
+    ReLU(z) = max(0, z)
+
+    Negative values become 0; positive values pass through unchanged.
+    This is computationally cheap and avoids the vanishing-gradient problem
+    that tanh and sigmoid can suffer from in deep networks.
+    """
+    return np.maximum(0.0, z)
+
+
+def apply_relu_derivative(z):
+    """
+    Derivative of ReLU element-wise.
+
+    ReLU'(z) = 1 if z > 0, else 0
+
+    At exactly z=0 the derivative is technically undefined, but we follow
+    the standard convention of returning 0 there (subgradient).
+    """
+    return (z > 0).astype(float)
+
+
 def get_activation_and_derivative(name):
     """
     Return the activation function and its derivative as a pair.
@@ -42,7 +67,7 @@ def get_activation_and_derivative(name):
     forward() and backward() — it just calls whatever functions it holds.
 
     Args:
-        name -- 'tanh' or 'sigmoid'
+        name -- 'tanh', 'sigmoid', or 'relu'
 
     Returns:
         (activation_fn, derivative_fn) -- two callable functions
@@ -51,8 +76,10 @@ def get_activation_and_derivative(name):
         return apply_tanh, apply_tanh_derivative
     elif name == "sigmoid":
         return apply_sigmoid, apply_sigmoid_derivative
+    elif name == "relu":
+        return apply_relu, apply_relu_derivative
     else:
-        raise ValueError(f"Unknown activation: '{name}'. Choose 'tanh' or 'sigmoid'.")
+        raise ValueError(f"Unknown activation: '{name}'. Choose 'tanh', 'sigmoid', or 'relu'.")
 
 
 # Weight initialization
