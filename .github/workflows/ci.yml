@@ -33,16 +33,26 @@ jobs:
       - name: Lint with flake8
         run: flake8 src/ tests/ --max-line-length=100
 
-      # Step 5: Run all unit tests and collect a coverage report
-      # --cov=src tells pytest-cov to measure coverage only for our source code
+      # Step 5: Run all unit tests and collect coverage in three formats:
+      #   - term-missing: prints a summary table directly in the CI log (easiest to read)
+      #   - html:         generates a folder of color-coded HTML pages you can download
+      #   - xml:          machine-readable format kept for compatibility
       - name: Run tests with pytest
-        run: pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+        run: pytest tests/ -v --cov=src --cov-report=term-missing --cov-report=html --cov-report=xml
 
-      # Step 6: Upload the XML coverage report so we can track it over time
-      # This step runs even if tests fail, so we always get the report
-      - name: Upload coverage report
+      # Step 6: Upload both the HTML folder and the XML file as downloadable artifacts
+      # 'if: always()' means we still get the report even when tests fail
+      - name: Upload HTML coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: coverage-html
+          # htmlcov/ is the folder pytest-cov creates; open htmlcov/index.html to browse it
+          path: htmlcov/
+
+      - name: Upload XML coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-xml
           path: coverage.xml
