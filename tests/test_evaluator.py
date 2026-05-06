@@ -12,11 +12,7 @@ We test:
 """
 
 import numpy as np
-import pytest
-import matplotlib
-# Use the non-interactive Agg backend so plots render without a display
-# This is important for running tests in CI (no monitor attached)
-matplotlib.use("Agg")
+from matplotlib.figure import Figure
 
 from src.evaluator import compute_mse, compute_r2, predict, assess_fit, plot_fit, plot_loss_curve
 from src.mlp import MLP
@@ -184,24 +180,21 @@ class TestPlots:
 
     def test_plot_fit_returns_figure(self):
         """plot_fit() should return a matplotlib Figure without crashing."""
-        import matplotlib.figure
         fig = plot_fit(
             x_train=self.x[:15], y_train=self.y[:15],
             x_test=self.x[15:], y_test=self.y[15:],
             x_curve=self.x, y_curve=self.y,
             title="Test fit plot",
         )
-        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(fig, Figure)
 
     def test_plot_loss_curve_returns_figure(self):
         """plot_loss_curve() should return a matplotlib Figure without crashing."""
-        import matplotlib.figure
         loss_history = [1.0, 0.8, 0.6, 0.4, 0.2, 0.1]
         fig = plot_loss_curve(loss_history, title="Test loss curve")
-        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(fig, Figure)
 
     def test_plot_loss_curve_single_epoch(self):
         """plot_loss_curve() should not crash when given just one data point."""
-        import matplotlib.figure
         fig = plot_loss_curve([0.5])
-        assert isinstance(fig, matplotlib.figure.Figure)
+        assert isinstance(fig, Figure)

@@ -8,8 +8,6 @@ This produces stable, consistent gradients but can be slow on large datasets.
 Step 4 of the task will introduce online (stochastic) training as a comparison.
 """
 
-import numpy as np
-
 
 def prepare_inputs(x, y):
     """
