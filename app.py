@@ -17,7 +17,7 @@ import base64                                                                # n
 
 import numpy as np                                                           # noqa: E402
 import matplotlib.pyplot as plt                                              # noqa: E402
-from flask import Flask, render_template, request                            # noqa: E402
+from flask import Flask, render_template, request, redirect, url_for        # noqa: E402
 
 from src.data_loader import load_data, denormalize                          # noqa: E402
 from src.mlp import MLP                                                      # noqa: E402
@@ -424,6 +424,21 @@ def relu():
 
     return render_template("relu.html", datasets=DATASETS, defaults=defaults,
                            loss_img=loss_img, fit_img=fit_img, config=config)
+
+
+@app.route("/reset")
+def reset():
+    """
+    Clear all training state so the app is back to a clean slate.
+
+    Useful when presenting — one click wipes the trained model, data, and
+    loss history so the demo can start fresh without restarting the server.
+    """
+    state["mlp"] = None
+    state["data"] = None
+    state["loss_history"] = None
+    state["config"] = None
+    return redirect(url_for("index"))
 
 
 if __name__ == "__main__":

@@ -10,10 +10,26 @@
 </head>
 <body>
 
+<!-- Overlay that dims the page when sidebar is open on mobile -->
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
 <div class="layout">
 
+  <!-- Mobile top bar (only visible on small screens) -->
+  <header class="mobile-header">
+    <button class="hamburger" id="hamburger" onclick="toggleSidebar()" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+    <span class="mobile-title">NumPy MLP</span>
+    <a href="{{ url_for('reset') }}"
+       onclick="return confirm('Reset all training state and go back to home?')"
+       style="font-size:0.78rem; color:#94a3b8; text-decoration:none; white-space:nowrap;">
+      ↺ Reset
+    </a>
+  </header>
+
   <!-- Sidebar navigation -->
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
       <h1>NumPy MLP</h1>
       <p>From scratch · No frameworks</p>
@@ -22,38 +38,53 @@
     <nav class="sidebar-nav">
       <div class="nav-section">Overview</div>
       <a href="{{ url_for('index') }}"
-         class="nav-link {% if request.path == '/' %}active{% endif %}">
+         class="nav-link {% if request.path == '/' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">⌂</span>
         Home
       </a>
 
       <div class="nav-section">Steps</div>
       <a href="{{ url_for('data') }}"
-         class="nav-link {% if request.path == '/data' %}active{% endif %}">
+         class="nav-link {% if request.path == '/data' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">1</span>
         Data Loading
       </a>
       <a href="{{ url_for('train') }}"
-         class="nav-link {% if request.path == '/train' %}active{% endif %}">
+         class="nav-link {% if request.path == '/train' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">2</span>
         Batch Training
       </a>
       <a href="{{ url_for('evaluate') }}"
-         class="nav-link {% if request.path == '/evaluate' %}active{% endif %}">
+         class="nav-link {% if request.path == '/evaluate' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">3</span>
         Evaluation
       </a>
       <a href="{{ url_for('compare') }}"
-         class="nav-link {% if request.path == '/compare' %}active{% endif %}">
+         class="nav-link {% if request.path == '/compare' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">4</span>
         Batch vs Online
       </a>
       <a href="{{ url_for('relu') }}"
-         class="nav-link {% if request.path == '/relu' %}active{% endif %}">
+         class="nav-link {% if request.path == '/relu' %}active{% endif %}"
+         onclick="closeSidebar()">
         <span class="step-dot">5</span>
         ReLU Network
       </a>
     </nav>
+
+    <!-- Reset button at the bottom of the sidebar -->
+    <div class="sidebar-footer">
+      <a href="{{ url_for('reset') }}"
+         class="btn-reset"
+         onclick="return confirm('Reset all training state and go back to home?')">
+        ↺ &nbsp;Reset app state
+      </a>
+    </div>
   </aside>
 
   <!-- Main content -->
@@ -64,7 +95,30 @@
 </div>
 
 <script>
-  // Show loading spinner and disable the button when a form is submitted
+  function openSidebar() {
+    document.getElementById("sidebar").classList.add("open");
+    document.getElementById("overlay").classList.add("visible");
+    document.getElementById("hamburger").classList.add("open");
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSidebar() {
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("overlay").classList.remove("visible");
+    document.getElementById("hamburger").classList.remove("open");
+    document.body.style.overflow = "";
+  }
+
+  function toggleSidebar() {
+    var sidebar = document.getElementById("sidebar");
+    if (sidebar.classList.contains("open")) {
+      closeSidebar();
+    } else {
+      openSidebar();
+    }
+  }
+
+  // Show a spinner and disable the submit button while the form is processing
   document.querySelectorAll("form").forEach(function(form) {
     form.addEventListener("submit", function() {
       var btn = form.querySelector(".btn-primary");
