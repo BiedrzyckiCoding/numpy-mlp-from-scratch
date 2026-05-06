@@ -1,0 +1,48 @@
+# This workflow runs on every push and pull request to the main branch.
+# It checks code quality (linting) and runs all unit tests.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    # Use the latest Ubuntu runner provided by GitHub Actions
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository code so the runner can access it
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up a specific Python version so the environment is reproducible
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Step 3: Install all project dependencies listed in requirements.txt
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Step 4: Run flake8 to catch style issues and obvious errors
+      # The --max-line-length flag is relaxed to 100 to allow readable long lines
+      - name: Lint with flake8
+        run: flake8 src/ tests/ --max-line-length=100
+
+      # Step 5: Run all unit tests and collect a coverage report
+      # --cov=src tells pytest-cov to measure coverage only for our source code
+      - name: Run tests with pytest
+        run: pytest tests/ -v --cov=src --cov-report=xml --cov-report=term-missing
+
+      # Step 6: Upload the XML coverage report so we can track it over time
+      # This step runs even if tests fail, so we always get the report
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage.xml

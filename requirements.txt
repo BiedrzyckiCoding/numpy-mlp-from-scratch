@@ -1,0 +1,14 @@
+# Core scientific computing — all network math is done with numpy only
+numpy==1.26.4
+
+# Plotting — used to visualize data and training results
+matplotlib==3.9.0
+
+# Testing framework — we use pytest to run all unit tests
+pytest==8.2.0
+
+# Coverage plugin for pytest — tells us which lines of code are tested
+pytest-cov==5.0.0
+
+# Linter — checks code style and catches common mistakes
+flake8==7.0.0
