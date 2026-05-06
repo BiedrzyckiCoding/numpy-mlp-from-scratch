@@ -10,6 +10,7 @@ We test:
   - MLP.backward: gradient shapes match weight shapes
   - MLP.update_weights: weights actually change
   - train_batch: loss decreases, history length is correct
+  - train_online: loss decreases, one update per sample per epoch
   - get_activation_and_derivative: known values for tanh and sigmoid
   - prepare_inputs: 1-D arrays become (1, n) matrices
 """
@@ -18,7 +19,7 @@ import numpy as np
 import pytest
 
 from src.mlp import MLP, initialize_weights, get_activation_and_derivative
-from src.trainer import train_batch, prepare_inputs
+from src.trainer import train_batch, train_online, train_online_one_epoch, prepare_inputs
 
 
 # Tests for initialize_weights()
@@ -308,3 +309,73 @@ class TestPrepareInputs:
         x_2d, y_2d = prepare_inputs(x, y)
         assert np.array_equal(x_2d, [[10.0, 20.0]])
         assert np.array_equal(y_2d, [[-1.0, -2.0]])
+
+
+# Tests for train_online() and train_online_one_epoch()
+
+
+class TestTrainOnline:
+
+    def setup_method(self):
+        """Same simple y = x dataset used in batch training tests."""
+        self.x_train = np.linspace(-1, 1, 40)
+        self.y_train = self.x_train.copy()
+
+    def test_loss_history_length(self):
+        """train_online() should return a list with exactly n_epochs entries."""
+        mlp = MLP(layer_sizes=[1, 8, 1])
+        history = train_online(mlp, self.x_train, self.y_train, n_epochs=10, learning_rate=0.01)
+        assert len(history) == 10
+
+    def test_loss_decreases_over_training(self):
+        """After enough epochs the final loss should be lower than the initial loss."""
+        mlp = MLP(layer_sizes=[1, 16, 1], activation="tanh")
+        history = train_online(mlp, self.x_train, self.y_train, n_epochs=300, learning_rate=0.05)
+        assert history[-1] < history[0]
+
+    def test_all_losses_are_non_negative(self):
+        """Average MSE per epoch can never be negative."""
+        mlp = MLP(layer_sizes=[1, 8, 1])
+        history = train_online(mlp, self.x_train, self.y_train, n_epochs=20, learning_rate=0.01)
+        assert all(loss >= 0 for loss in history)
+
+    def test_loss_history_values_are_floats(self):
+        """Each element in the loss history should be a plain Python float."""
+        mlp = MLP(layer_sizes=[1, 8, 1])
+        history = train_online(mlp, self.x_train, self.y_train, n_epochs=5, learning_rate=0.01)
+        assert all(isinstance(loss, float) for loss in history)
+
+    def test_same_seed_gives_same_history(self):
+        """The same seed must produce the exact same loss curve every run."""
+        mlp_a = MLP(layer_sizes=[1, 8, 1], seed=0)
+        mlp_b = MLP(layer_sizes=[1, 8, 1], seed=0)
+        history_a = train_online(mlp_a, self.x_train, self.y_train, n_epochs=10,
+                                 learning_rate=0.01, seed=7)
+        history_b = train_online(mlp_b, self.x_train, self.y_train, n_epochs=10,
+                                 learning_rate=0.01, seed=7)
+        assert history_a == history_b
+
+    def test_weights_update_each_sample(self):
+        """Weights should change after a single online epoch (n_samples updates)."""
+        mlp = MLP(layer_sizes=[1, 8, 1])
+        original_W0 = mlp.weights[0].copy()
+
+        rng = np.random.default_rng(0)
+        x_2d = self.x_train.reshape(1, -1)
+        y_2d = self.y_train.reshape(1, -1)
+        train_online_one_epoch(mlp, x_2d, y_2d, learning_rate=0.1, rng=rng)
+
+        assert not np.array_equal(mlp.weights[0], original_W0)
+
+    def test_online_and_batch_both_reduce_loss(self):
+        """Both methods should reduce the loss — just via different update schedules."""
+        mlp_batch = MLP(layer_sizes=[1, 16, 1], seed=0)
+        mlp_online = MLP(layer_sizes=[1, 16, 1], seed=0)
+
+        batch_history = train_batch(mlp_batch, self.x_train, self.y_train,
+                                    n_epochs=200, learning_rate=0.05)
+        online_history = train_online(mlp_online, self.x_train, self.y_train,
+                                      n_epochs=200, learning_rate=0.005, seed=42)
+
+        assert batch_history[-1] < batch_history[0]
+        assert online_history[-1] < online_history[0]
