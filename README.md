@@ -4,6 +4,8 @@ A multi-layer perceptron (MLP) neural network built entirely with **NumPy** — 
 
 The project ships with a **Flask web UI** that walks through all five task steps interactively, and a **CI/CD pipeline** (GitHub Actions) that runs lint and 93 unit tests on every push.
 
+See it live at: https://jakub-biedrzycki-mlp-from-scratch.vercel.app/
+
 ---
 
 ## Table of contents
