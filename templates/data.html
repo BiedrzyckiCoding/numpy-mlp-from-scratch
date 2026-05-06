@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Step 1 — Data Loading{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="step-tag">Step 1</div>
+  <h2>Data Loading &amp; Splitting</h2>
+  <p>Select a dataset, inspect its statistics, and see the 80 / 20 train-test split.</p>
+</div>
+
+<div class="page-body stack">
+
+  <!-- Dataset selector -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📂</span>
+      <h3>Select dataset</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/data">
+        <div class="flex gap-4">
+          <div class="form-group" style="flex: 1; max-width: 260px;">
+            <label class="form-label">Dataset file</label>
+            <select name="dataset" class="form-control">
+              {% for d in datasets %}
+                <option value="{{ d }}" {% if d == selected %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div style="display:flex; align-items:flex-end;">
+            <button type="submit" class="btn btn-primary">
+              <span class="spinner"></span>
+              Load
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Stats + chart side by side -->
+  <div class="grid-2">
+
+    <!-- Statistics table -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <h3>Dataset statistics</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="table">
+          <thead>
+            <tr><th>Property</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Total samples</td><td class="val">{{ stats.n_total }}</td></tr>
+            <tr><td>Training set</td><td class="val">{{ stats.n_train }}</td></tr>
+            <tr><td>Test set</td><td class="val">{{ stats.n_test }}</td></tr>
+            <tr><td>Split ratio</td><td class="val">80 / 20</td></tr>
+            <tr><td>x range</td><td class="val">{{ stats.x_range }}</td></tr>
+            <tr><td>y range</td><td class="val">{{ stats.y_range }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Normalisation stats -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">⚖</span>
+        <h3>Z-score normalisation (train set)</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        <table class="table">
+          <thead>
+            <tr><th>Statistic</th><th>Value</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>x mean</td><td class="val">{{ stats.x_mean }}</td></tr>
+            <tr><td>x std</td><td class="val">{{ stats.x_std }}</td></tr>
+            <tr><td>y mean</td><td class="val">{{ stats.y_mean }}</td></tr>
+            <tr><td>y std</td><td class="val">{{ stats.y_std }}</td></tr>
+          </tbody>
+        </table>
+        <div style="padding: 16px;">
+          <div class="alert alert-info" style="font-size: 0.8rem;">
+            Stats are computed on the <strong>training set only</strong> to avoid
+            leaking test information into the model.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Scatter plot -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🔵</span>
+      <h3>Scatter plot — original scale</h3>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap">
+        <img class="chart-img" src="data:image/png;base64,{{ plot_img }}" alt="Scatter plot">
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

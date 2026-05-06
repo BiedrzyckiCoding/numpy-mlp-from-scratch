@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block title %}Step 3 — Evaluation{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="step-tag">Step 3</div>
+  <h2>Network Evaluation</h2>
+  <p>MSE, R², fit diagnosis, and a visual overlay of the model on the original data.</p>
+</div>
+
+<div class="page-body stack">
+
+  {% if no_model %}
+
+  <!-- No model trained yet -->
+  <div class="card">
+    <div class="card-body">
+      <div class="alert alert-warning">
+        No trained model found. Go to <a href="/train"><strong>Step 2 — Batch Training</strong></a>
+        first and train a network.
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <!-- Config reminder -->
+  <div class="alert alert-info">
+    Evaluating model trained on <strong>{{ config.dataset }}</strong> —
+    architecture <strong>{{ config.layer_sizes | join(' → ') }}</strong>,
+    activation <strong>{{ config.activation }}</strong>,
+    {{ config.epochs }} epochs, lr = {{ config.lr }}.
+  </div>
+
+  <!-- Metric tiles -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📐</span>
+      <h3>Metrics — original scale</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="grid-4">
+        <div class="metric">
+          <div class="metric-value">{{ metrics.train_mse }}</div>
+          <div class="metric-label">Train MSE</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ metrics.test_mse }}</div>
+          <div class="metric-label">Test MSE</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ metrics.train_r2 }}</div>
+          <div class="metric-label">Train R²</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ metrics.test_r2 }}</div>
+          <div class="metric-label">Test R²</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Diagnosis -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">🩺</span>
+      <h3>Fit diagnosis</h3>
+    </div>
+    <div class="card-body">
+      <div class="flex gap-4" style="align-items: flex-start; flex-wrap: wrap;">
+        {% if metrics.diagnosis == 'good fit' %}
+          <span class="badge badge-success" style="font-size: 0.9rem; padding: 6px 16px;">
+            ✓ Good fit
+          </span>
+        {% elif metrics.diagnosis == 'overfitting' %}
+          <span class="badge badge-danger" style="font-size: 0.9rem; padding: 6px 16px;">
+            ✗ Overfitting
+          </span>
+        {% else %}
+          <span class="badge badge-warning" style="font-size: 0.9rem; padding: 6px 16px;">
+            ~ Underfitting
+          </span>
+        {% endif %}
+        <p style="color: #374151; font-size: 0.9rem; flex: 1;">{{ metrics.message }}</p>
+      </div>
+
+      <hr class="divider">
+
+      <div class="grid-3" style="font-size: 0.82rem; color: var(--text-muted);">
+        <div>
+          <strong style="color: var(--text);">Underfitting</strong><br>
+          Train MSE is high. The model is too simple, hasn't trained long enough,
+          or the learning rate is too small.
+        </div>
+        <div>
+          <strong style="color: var(--text);">Good fit</strong><br>
+          Train and test MSE are both low and close to each other. The model
+          generalises well to unseen data.
+        </div>
+        <div>
+          <strong style="color: var(--text);">Overfitting</strong><br>
+          Train MSE is much lower than test MSE. The model has memorised the
+          training data but doesn't generalise.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tips -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">💡</span>
+      <h3>Tips — how to improve this model</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      {% for tip in tips %}
+      <div style="padding: 16px 24px; border-bottom: 1px solid var(--border-light); display: flex; gap: 16px; align-items: flex-start;">
+        <div style="flex: 1;">
+          <p style="font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 3px;">
+            {{ tip.title }}
+          </p>
+          <p style="font-size: 0.84rem; color: var(--text-muted); margin-bottom: 6px;">
+            {{ tip.detail }}
+          </p>
+          <div class="code" style="font-size: 0.78rem;">→ {{ tip.action }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Fit plot -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📈</span>
+      <h3>Model fit plot</h3>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap">
+        <img class="chart-img" src="data:image/png;base64,{{ fit_img }}" alt="Fit plot">
+      </div>
+      <p class="text-muted mt-4">
+        Blue dots = training set · Red dots = test set · Black line = model predictions
+        across 250 evenly spaced x values.
+      </p>
+    </div>
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}
