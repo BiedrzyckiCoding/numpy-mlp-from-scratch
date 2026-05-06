@@ -12,3 +12,6 @@ pytest-cov==5.0.0
 
 # Linter — checks code style and catches common mistakes
 flake8==7.0.0
+
+# Web framework — powers the interactive demo UI
+flask==3.0.3

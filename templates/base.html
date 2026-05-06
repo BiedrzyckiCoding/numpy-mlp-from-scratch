@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}NumPy MLP{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- Sidebar navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>NumPy MLP</h1>
+      <p>From scratch · No frameworks</p>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Overview</div>
+      <a href="{{ url_for('index') }}"
+         class="nav-link {% if request.path == '/' %}active{% endif %}">
+        <span class="step-dot">⌂</span>
+        Home
+      </a>
+
+      <div class="nav-section">Steps</div>
+      <a href="{{ url_for('data') }}"
+         class="nav-link {% if request.path == '/data' %}active{% endif %}">
+        <span class="step-dot">1</span>
+        Data Loading
+      </a>
+      <a href="{{ url_for('train') }}"
+         class="nav-link {% if request.path == '/train' %}active{% endif %}">
+        <span class="step-dot">2</span>
+        Batch Training
+      </a>
+      <a href="{{ url_for('evaluate') }}"
+         class="nav-link {% if request.path == '/evaluate' %}active{% endif %}">
+        <span class="step-dot">3</span>
+        Evaluation
+      </a>
+      <a href="{{ url_for('compare') }}"
+         class="nav-link {% if request.path == '/compare' %}active{% endif %}">
+        <span class="step-dot">4</span>
+        Batch vs Online
+      </a>
+      <a href="{{ url_for('relu') }}"
+         class="nav-link {% if request.path == '/relu' %}active{% endif %}">
+        <span class="step-dot">5</span>
+        ReLU Network
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+
+<script>
+  // Show loading spinner and disable the button when a form is submitted
+  document.querySelectorAll("form").forEach(function(form) {
+    form.addEventListener("submit", function() {
+      var btn = form.querySelector(".btn-primary");
+      if (btn) {
+        var spinner = btn.querySelector(".spinner");
+        if (spinner) { spinner.style.display = "block"; }
+        btn.disabled = true;
+        btn.style.opacity = "0.75";
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

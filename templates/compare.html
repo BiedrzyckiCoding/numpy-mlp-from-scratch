@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Step 4 — Batch vs Online{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="step-tag">Step 4</div>
+  <h2>Batch vs Online (Stochastic) Training</h2>
+  <p>Two identical networks trained side-by-side with different update strategies.</p>
+</div>
+
+<div class="page-body stack">
+
+  <!-- Explainer -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">💡</span>
+      <h3>What's the difference?</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <p class="fw-600" style="color: #3b82f6; margin-bottom: 6px;">Batch gradient descent</p>
+          <p class="text-muted">
+            Computes gradients using <em>all</em> training samples at once, then
+            updates weights once per epoch. Gradients are stable and accurate
+            but each epoch is expensive.
+          </p>
+          <div class="code mt-4">1 update per epoch</div>
+        </div>
+        <div>
+          <p class="fw-600" style="color: #f59e0b; margin-bottom: 6px;">Online (stochastic) GD</p>
+          <p class="text-muted">
+            Updates weights after every <em>single</em> sample, picked in a
+            random order each epoch. Noisier gradients, but more updates per
+            epoch — use a smaller learning rate.
+          </p>
+          <div class="code mt-4">n_samples updates per epoch</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuration form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚙</span>
+      <h3>Configuration</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/compare">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Dataset</label>
+            <select name="dataset" class="form-control">
+              {% for d in datasets %}
+                <option value="{{ d }}" {% if d == defaults.dataset %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Hidden neurons</label>
+            <input type="number" name="hidden_size" class="form-control"
+                   value="{{ defaults.hidden_size }}" min="4" max="128">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Epochs</label>
+            <input type="number" name="epochs" class="form-control"
+                   value="{{ defaults.epochs }}" min="50" max="5000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Batch learning rate</label>
+            <input type="number" name="batch_lr" class="form-control"
+                   value="{{ defaults.batch_lr }}" step="any" min="0.0001" max="1">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Online learning rate</label>
+            <input type="number" name="online_lr" class="form-control"
+                   value="{{ defaults.online_lr }}" step="any" min="0.0001" max="1">
+            <span class="form-hint">Usually needs to be smaller than batch lr</span>
+          </div>
+
+        </div>
+        <div style="margin-top: 20px;">
+          <button type="submit" class="btn btn-primary">
+            <span class="spinner"></span>
+            Run comparison
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if comparison %}
+
+  <!-- Summary comparison table -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📋</span>
+      <h3>Results summary</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th style="color: #3b82f6;">Batch GD</th>
+            <th style="color: #f59e0b;">Online SGD</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Final MSE (normalized)</td>
+            <td>{{ comparison.batch_final }}</td>
+            <td>{{ comparison.online_final }}</td>
+          </tr>
+          <tr>
+            <td>Weight updates total</td>
+            <td>{{ comparison.batch_updates }}</td>
+            <td>{{ comparison.online_updates }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Overlay chart -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📊</span>
+      <h3>Loss curves — overlaid</h3>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap">
+        <img class="chart-img" src="data:image/png;base64,{{ overlay_img }}" alt="Overlay comparison">
+      </div>
+      <p class="text-muted mt-4">
+        Both curves are plotted per <em>epoch</em>. Online SGD performs many more
+        weight updates per epoch (one per training sample), which is why it typically
+        converges faster on an epoch basis — but at the cost of noisy gradients.
+      </p>
+    </div>
+  </div>
+
+  <!-- Individual charts side by side -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon" style="color: #3b82f6;">●</span>
+        <h3>Batch GD loss curve</h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <img class="chart-img" src="data:image/png;base64,{{ batch_img }}" alt="Batch loss">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon" style="color: #f59e0b;">●</span>
+        <h3>Online SGD loss curve</h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <img class="chart-img" src="data:image/png;base64,{{ online_img }}" alt="Online loss">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="alert alert-info">
+    Configure the parameters above and click <strong>Run comparison</strong> to train both networks.
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}
