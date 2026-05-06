@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% block title %}Step 5 — ReLU Network{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="step-tag">Step 5</div>
+  <h2>ReLU Activation Function</h2>
+  <p>Train a deeper network using ReLU hidden units instead of tanh or sigmoid.</p>
+</div>
+
+<div class="page-body stack">
+
+  <!-- ReLU explainer -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">💡</span>
+      <h3>Why ReLU?</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <p class="text-muted" style="margin-bottom: 12px;">
+            ReLU (Rectified Linear Unit) is the most widely used activation in
+            modern deep learning. Unlike tanh and sigmoid it doesn't squash values
+            into a fixed range — it simply passes positive inputs through and
+            clamps negative ones to zero.
+          </p>
+          <div class="code">ReLU(z)  =  max(0, z)<br>ReLU′(z) =  1 if z &gt; 0, else 0</div>
+        </div>
+        <div>
+          <table class="table">
+            <thead>
+              <tr><th>Property</th><th>tanh</th><th>sigmoid</th><th>ReLU</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Output range</td><td class="val">[-1, 1]</td><td class="val">[0, 1]</td><td class="val">[0, ∞)</td></tr>
+              <tr><td>Vanishing gradient</td><td>yes</td><td>yes</td><td>no</td></tr>
+              <tr><td>Dying neurons</td><td>no</td><td>no</td><td>possible</td></tr>
+              <tr><td>Fit shape</td><td>smooth</td><td>smooth</td><td>piecewise-linear</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Configuration form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚙</span>
+      <h3>Network configuration</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/relu">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Dataset</label>
+            <select name="dataset" class="form-control">
+              {% for d in datasets %}
+                <option value="{{ d }}" {% if d == defaults.dataset %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Hidden neurons (per layer)</label>
+            <input type="number" name="hidden_size" class="form-control"
+                   value="{{ defaults.hidden_size }}" min="4" max="256">
+            <span class="form-hint">Architecture: 1 → N → N → 1</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Epochs</label>
+            <input type="number" name="epochs" class="form-control"
+                   value="{{ defaults.epochs }}" min="100" max="10000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Learning rate</label>
+            <input type="number" name="lr" class="form-control"
+                   value="{{ defaults.lr }}" step="any" min="0.0001" max="1">
+            <span class="form-hint">ReLU benefits from a smaller lr</span>
+          </div>
+
+        </div>
+        <div style="margin-top: 20px;">
+          <button type="submit" class="btn btn-primary">
+            <span class="spinner"></span>
+            Train ReLU network
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if config %}
+
+  <!-- Training summary -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">✅</span>
+      <h3>Training complete</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="grid-4">
+        <div class="metric">
+          <div class="metric-value">{{ config.final_loss }}</div>
+          <div class="metric-label">Final MSE</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ config.epochs }}</div>
+          <div class="metric-label">Epochs</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ config.lr }}</div>
+          <div class="metric-label">Learning rate</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" style="font-size: 1rem;">{{ config.arch }}</div>
+          <div class="metric-label">Architecture</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts side by side -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📉</span>
+        <h3>Training loss</h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <img class="chart-img" src="data:image/png;base64,{{ loss_img }}" alt="Loss curve">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <span class="card-icon">📈</span>
+        <h3>Model fit</h3>
+      </div>
+      <div class="card-body">
+        <div class="chart-wrap">
+          <img class="chart-img" src="data:image/png;base64,{{ fit_img }}" alt="Fit plot">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert alert-warning">
+    <strong>Notice:</strong> ReLU networks produce a <strong>piecewise-linear</strong> approximation —
+    the model curve is made of straight line segments rather than a smooth curve. With more hidden
+    neurons you get more segments and a better approximation of the true function.
+    If some neurons become permanently inactive ("<em>dying ReLU</em>"), try a smaller learning rate.
+  </div>
+
+  {% else %}
+
+  <div class="alert alert-info">
+    Configure the parameters above and click <strong>Train ReLU network</strong> to start.
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}NumPy MLP — Home{% endblock %}
+
+{% block content %}
+<div class="page-body">
+
+  <!-- Hero banner -->
+  <div class="hero">
+    <h2>NumPy MLP from Scratch</h2>
+    <p>
+      A multi-layer perceptron built with pure NumPy — no PyTorch, no TensorFlow,
+      no autograd. Every forward pass, backprop step, and gradient update is
+      implemented by hand.
+    </p>
+    <div class="hero-pills">
+      <span class="hero-pill">Batch backpropagation</span>
+      <span class="hero-pill">Online SGD</span>
+      <span class="hero-pill">tanh · sigmoid · ReLU</span>
+      <span class="hero-pill">MSE · R²</span>
+      <span class="hero-pill">93 unit tests</span>
+    </div>
+  </div>
+
+  <!-- Step overview cards -->
+  <div class="grid-3" style="margin-bottom: 20px;">
+
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <h4>Data Loading &amp; Splitting</h4>
+        <p>
+          Load any of the 16 datasets, apply z-score normalisation computed on
+          the training set only, and split 80 / 20 with a fixed random seed.
+        </p>
+        <a href="/data">Explore data →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <h4>Network Design &amp; Batch Training</h4>
+        <p>
+          Configure hidden layer width, depth, activation function, learning rate
+          and epochs. Trains with full-batch backpropagation and Xavier weight init.
+        </p>
+        <a href="/train">Train a network →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <h4>Evaluation</h4>
+        <p>
+          Inspect the fit on a plot in the original data scale. See Train / Test
+          MSE and R², plus an automatic diagnosis: underfitting, good fit, or
+          overfitting.
+        </p>
+        <a href="/evaluate">Evaluate →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <h4>Batch vs Online Training</h4>
+        <p>
+          Train two identical networks side-by-side — one with batch GD and one
+          with online (stochastic) GD — and compare their loss curves on the same
+          chart.
+        </p>
+        <a href="/compare">Compare methods →</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <h4>ReLU Activation</h4>
+        <p>
+          Swap tanh for ReLU. The resulting network approximates the data with
+          piecewise-linear segments. See how the loss curve and fit plot differ
+          from the smooth activations.
+        </p>
+        <a href="/relu">Try ReLU →</a>
+      </div>
+    </div>
+
+    <!-- Project stats card -->
+    <div class="card">
+      <div class="step-card">
+        <div class="step-num" style="background:#f0fdf4; color:#166534;">✓</div>
+        <h4>Project Stats</h4>
+        <table class="table" style="margin-top: 4px;">
+          <tr><td>Source files</td><td class="val">4</td></tr>
+          <tr><td>Test files</td><td class="val">3</td></tr>
+          <tr><td>Unit tests</td><td class="val">93</td></tr>
+          <tr><td>Datasets</td><td class="val">16</td></tr>
+          <tr><td>Activations</td><td class="val">tanh · sigmoid · ReLU</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- How it works callout -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚙</span>
+      <h3>How it works</h3>
+    </div>
+    <div class="card-body">
+      <div class="grid-2">
+        <div>
+          <p class="text-muted" style="margin-bottom: 10px;">
+            The MLP stores weights as plain NumPy arrays. A forward pass is a
+            series of matrix multiplications and element-wise activations:
+          </p>
+          <div class="code">
+            z = W @ a_prev + b<br>
+            a = activation(z)  # hidden<br>
+            output = z_last    # linear out
+          </div>
+        </div>
+        <div>
+          <p class="text-muted" style="margin-bottom: 10px;">
+            Backpropagation walks backwards through the cached values and
+            applies the chain rule to compute each gradient:
+          </p>
+          <div class="code">
+            δ = (ŷ − y) / n<br>
+            dW = δ @ a_prev.T<br>
+            δ_prev = Wᵀ @ δ ⊙ f′(z)
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

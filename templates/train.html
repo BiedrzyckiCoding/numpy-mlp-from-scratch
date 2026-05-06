@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}Step 2 — Batch Training{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="step-tag">Step 2</div>
+  <h2>Neural Network Design &amp; Batch Training</h2>
+  <p>Configure the architecture and hyperparameters, then train with full-batch backpropagation.</p>
+</div>
+
+<div class="page-body stack">
+
+  <!-- Configuration form -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">⚙</span>
+      <h3>Network configuration</h3>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="/train">
+        <div class="form-grid">
+
+          <div class="form-group">
+            <label class="form-label">Dataset</label>
+            <select name="dataset" class="form-control">
+              {% for d in datasets %}
+                <option value="{{ d }}" {% if d == defaults.dataset %}selected{% endif %}>{{ d }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Activation (hidden layers)</label>
+            <select name="activation" class="form-control">
+              <option value="tanh"    {% if defaults.activation == 'tanh'    %}selected{% endif %}>tanh</option>
+              <option value="sigmoid" {% if defaults.activation == 'sigmoid' %}selected{% endif %}>sigmoid</option>
+            </select>
+            <span class="form-hint">ReLU is covered in Step 5</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Hidden neurons per layer</label>
+            <input type="number" name="hidden_size" class="form-control"
+                   value="{{ defaults.hidden_size }}" min="2" max="128">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Number of hidden layers</label>
+            <select name="n_hidden" class="form-control">
+              {% for n in [1, 2, 3] %}
+                <option value="{{ n }}" {% if defaults.n_hidden == n %}selected{% endif %}>{{ n }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Epochs</label>
+            <input type="number" name="epochs" class="form-control"
+                   value="{{ defaults.epochs }}" min="50" max="10000">
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Learning rate</label>
+            <input type="number" name="lr" class="form-control"
+                   value="{{ defaults.lr }}" step="any" min="0.0001" max="1">
+          </div>
+
+        </div>
+
+        <div style="margin-top: 20px;">
+          <button type="submit" class="btn btn-primary">
+            <span class="spinner"></span>
+            Train network
+          </button>
+          <span class="text-muted" style="margin-left: 12px; font-size: 0.8rem;">
+            The trained model is saved and available on the Evaluation page.
+          </span>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if config %}
+
+  <!-- Training summary metrics -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">✅</span>
+      <h3>Training complete</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="grid-4">
+        <div class="metric">
+          <div class="metric-value">{{ config.final_loss }}</div>
+          <div class="metric-label">Final MSE</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ config.epochs }}</div>
+          <div class="metric-label">Epochs</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value">{{ config.lr }}</div>
+          <div class="metric-label">Learning rate</div>
+        </div>
+        <div class="metric">
+          <div class="metric-value" style="font-size: 1.1rem;">{{ config.arch }}</div>
+          <div class="metric-label">Architecture</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loss curve -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-icon">📉</span>
+      <h3>Training loss curve</h3>
+    </div>
+    <div class="card-body">
+      <div class="chart-wrap">
+        <img class="chart-img" src="data:image/png;base64,{{ plot_img }}" alt="Loss curve">
+      </div>
+      <p class="text-muted mt-4">
+        Loss is plotted on a log scale so early fast drops and later fine-tuning
+        are both visible. A healthy curve decreases smoothly and then flattens.
+      </p>
+      <div style="margin-top: 14px;">
+        <a href="/evaluate" class="btn btn-primary">View evaluation →</a>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+
+  <div class="alert alert-info">
+    Fill in the form above and click <strong>Train network</strong> to start.
+  </div>
+
+  {% endif %}
+
+</div>
+{% endblock %}
